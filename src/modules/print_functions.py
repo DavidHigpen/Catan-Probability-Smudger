@@ -22,6 +22,7 @@ def print_help():
     print(f'time \t\t show current timer')
     print(f'[roll] \t\t manually enter roll for current player')
     print(f'[player name] \t skips to a specific player')
+    print(f'[player name] -n \t skips to a player without rolling')
     
 def print_barb_board(level):
     '''Prints the barbarian board for Cities and Knights

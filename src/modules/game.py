@@ -24,6 +24,7 @@ class Game:
             person: str = input('Enter a player, type "done" to be done: ')
             if(not person):
                 print('Please enter a valid player name')
+                continue
             if(person.lower() == 'done'):
                 if(not self.players):
                     print('Please enter more players')
@@ -85,16 +86,20 @@ class Game:
         elif command in ('dist', 'd'):
             print_dict()
         elif command in ('time'):
-            print(f'{self.players[self.current_turn].name}\'s timer is at {time.perf_counter() - self.start:.2f} seconds')
+            print(f'{self.players[self.current_turn].name}\'s timer is at {self.time_format(time.perf_counter() - self.start)}')
         elif command in ('times'):
             self.print_times()
         elif command.isdigit() and int(command) >= 2 and int(command) <= 12:
             self.end_turn()
             self.normal_turn(int(command))
-        elif self.find_player(command) != -1:
+        elif self.find_player(command[:command.find(" ")]) != -1:
             self.end_turn()
             self.current_turn = self.find_player(command)
-            self.normal_turn()
+            if('-n' in command):
+                self.start = time.perf_counter()
+                print(f'It is now {self.players[self.current_turn].name}\'s turn')
+            else:
+                self.normal_turn()
         else:
             print('Invalid command')
         
@@ -112,13 +117,18 @@ class Game:
         Returns:
             int: returns index of player if they are in list, otherwise returns -1
         """
-        for i in range(len(self.players)):
-            if person == self.players[i].name:
+        for i, player in enumerate(self.players):
+            if person == player.name:
                 return i
         return -1
 
     def print_times(self) -> None:
         print()
         for player in self.players:
-            print(f'{player.name}\'s average time was {player.get_average():.2f} seconds')
+            print(f'{player.name}\'s average time was {self.time_format(player.get_average())}')
         print()
+
+    def time_format(self, seconds: float) -> str:
+        if seconds > 60:
+            return f'{seconds // 60:.0f} minutes, {seconds % 60:.2f} seconds'
+        return f'{seconds:.2f} seconds'
