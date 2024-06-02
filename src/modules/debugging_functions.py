@@ -1,5 +1,5 @@
 from probability_functions import *
-from constants import *
+from modules.constants import *
 import matplotlib.pyplot as plt
 import random
 import numpy as np

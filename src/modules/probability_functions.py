@@ -1,20 +1,6 @@
-from constants import *
+from modules.constants import *
 import random
 
-def find_player(people, person):
-    """Return index of the list where person is in people
-
-    Args:
-        people (list of lists of strings)): 2d array where people[n][0] is the name of each player
-        person (string): 
-
-    Returns:
-        int: returns index of player if they are in list, otherwise returns -1
-    """
-    for i in range(len(people)):
-        if person == people[i][0]:
-            return i
-    return -1
 
 def redistribute(number):  
     """Removes constant probability from the rolled number and redistributes across other numbers. If the rolled number has less than the removed amount, it redistributes the correct amount

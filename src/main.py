@@ -1,4 +1,7 @@
-from gameplay import play_game
+from modules.game import Game
+
+def main():
+    game: Game = Game()
 
 if __name__ == "__main__":
-    play_game()
+    main()
