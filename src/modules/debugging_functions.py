@@ -1,4 +1,4 @@
-from probability_functions import *
+from modules.game import Game
 from modules.constants import *
 import matplotlib.pyplot as plt
 import random
@@ -26,9 +26,10 @@ def plot_trials(trials):
     Args:
         trials (int): Represents hte number of random numbers to generate. 150 displays the difference well
     """
+    game = Game()
     rolls = []
     for i in range(trials):
-        rolls.append(roll_dice())
+        rolls.append(game.roll_dice())
     bins = np.arange(2, 14) - 0.5
     plt.hist(rolls, bins=bins, density=False)
     plt.xlabel('Rolls')
@@ -36,8 +37,8 @@ def plot_trials(trials):
     plt.title('Rolls Histogram')
     plt.show()
     
-def plot_prob_dist():
-    #Print function will create and print a histogram representing the likelyhood that each number gets rolled
+def plot_prob_dist(prob):
+    # Print function will create and print a histogram representing the likelyhood that each number gets rolled
     numbers = list(prob.keys())
     probs = list(prob.values())
     
@@ -47,9 +48,8 @@ def plot_prob_dist():
     plt.title('Distribution of Probability')
     plt.show()
     
-def check_sum():
-    """Used for debugging. If the total probability is not 1, it is not adjusting probabilities correctly. Slight slight variation due to rounding errors
-    """
+def check_sum(prob):
+    # Used for debugging. If the total probability is not 1, it is not adjusting probabilities correctly. Slight slight variation due to rounding errors
     total = 0.0
     for i in range(2, 13):
         total += prob[i]

@@ -2,7 +2,7 @@
 
 from modules.constants import *
 
-def print_dict():
+def print_dict(prob):
     '''Used for debugging. Prints the probability each number gets rolled in the form of a list
     '''
     print('\n')

@@ -1,134 +1,59 @@
 from typing import List, Tuple
-import time
+import random
+from modules.constants import *
 
-from modules.people import Person
-from modules.probability_functions import roll_dice, roll_red_die, roll_boat_die
-from modules.print_functions import print_barb_board, print_dict, print_help
 
 class Game:
-    players: List[Person] = []
-    person: str = ''
-    cities_and_knights: bool = False
-    current_turn: int = 0
-    barb_ship_counter: int = 0
-
     def __init__(self):
-        self.create_people()
-        self.ask_cities_and_knights()
-        input(f"Hit enter to start {self.players[0].name}'s turn")
-        self.normal_turn()
-        self.play_game()
+        self.players = []
+        self.person: str = ''
+        self.cities_and_knights: bool = False
+        self.current_turn: int = 0
+        self.barb_ship_counter: int = 0
 
-    def create_people(self) -> None:
-        while(True):
-            person: str = input('Enter a player, type "done" to be done: ')
-            if(not person):
-                print('Please enter a valid player name')
-                continue
-            if(person.lower() == 'done'):
-                if(not self.players):
-                    print('Please enter more players')
-                    continue
-                break
-            self.players.append(Person(person))
+        self.prob = {
+            2: 1 / 36, 3: 2 / 36, 4: 3 / 36, 5: 4 / 36, 6: 5 / 36,
+            7: 6 / 36, 8: 5 / 36, 9: 4 / 36, 10: 3 / 36, 11: 2 / 36, 12: 1 / 36
+        }
 
-    def ask_cities_and_knights(self):
-        self.cities_and_knights = input("Are you playing Cities and Knights? (y/n)") == "y"
-
-    def play_game(self):
-        while(True):
-            self.do_turn()
-
-    def end_turn(self):
-        end = time.perf_counter()
-        self.players[self.current_turn].add_time(end - self.start)
-        self.current_turn = (self.current_turn + 1) % len(self.players)
-    
-
-    def normal_turn(self, roll: int = None):
-        print(f"It is now {self.players[self.current_turn].name}'s turn")
-        self.start = time.perf_counter()
-        if roll == None:
-            roll = roll_dice()
-        print("\nRoll is", roll)
-        if(self.cities_and_knights):
-            self.cities_and_knights_turn(roll)
-        
-
-    def cities_and_knights_turn(self, roll):
-        red = roll_red_die(roll)
-        boat = roll_boat_die()
-        if(boat == "Barbarians"):
-            self.barb_ship_counter += 1
-            print("⚔️ Barbarians advance")
-        else:
-            print(boat, red)
-        print_barb_board(self.barb_ship_counter)
-        self.barb_ship_counter %= 7
-
-
-    def do_turn(self):
-        command = input("Hit enter for next roll (-h for help): ")
-        if command == '':
-            self.end_turn()
-            self.normal_turn()
-        elif command in ('-h', 'help', 'h'):
-            print_help()
-        elif command in ('exit', 'quit', 'done'):
-            end = time.perf_counter()
-            self.players[self.current_turn].add_time(end - self.start)
-            self.print_times()
-            exit()
-        elif command in ('-p', 'pause', 'p'):
-            paused_time = time.perf_counter() - self.start
-            input('Timer is paused, hit enter to resume turn')
-            self.start = time.perf_counter() - paused_time
-        elif command in ('dist', 'd'):
-            print_dict()
-        elif command in ('time'):
-            print(f'{self.players[self.current_turn].name}\'s timer is at {self.time_format(time.perf_counter() - self.start)}')
-        elif command in ('times'):
-            self.print_times()
-        elif command.isdigit() and int(command) >= 2 and int(command) <= 12:
-            self.end_turn()
-            self.normal_turn(int(command))
-        elif self.find_player(command[:command.find(" ")]) != -1:
-            self.end_turn()
-            self.current_turn = self.find_player(command)
-            if('-n' in command):
-                self.start = time.perf_counter()
-                print(f'It is now {self.players[self.current_turn].name}\'s turn')
-            else:
-                self.normal_turn()
-        else:
-            print('Invalid command')
-        
+    def redistribute(self, number):  
+        # Removes constant probability from the rolled number and redistributes across other numbers. If the rolled number has less than the removed amount, it redistributes the correct amount
+        adjustProb = CONSTANT_REMOVE
+        if(self.prob[number] < CONSTANT_REMOVE):
+            adjustProb = self.prob[number]
+        self.prob[number] -= adjustProb
+        for i in range(2, 13):
+            self.prob[i] += adjustProb * probIncr[i] / CONSTANT_REMOVE
             
-        
-
-
-    def find_player(self, person):
-        """Return index of the list where person is in people
-
-        Args:
-            people (list of lists of strings)): 2d array where people[n][0] is the name of each player
-            person (string): 
-
-        Returns:
-            int: returns index of player if they are in list, otherwise returns -1
-        """
-        for i, player in enumerate(self.players):
-            if person == player.name:
+    def roll_dice(self, roll = 0):
+        # Generates a random number and finds which roll that number represents to generate a pseudorandom roll with our adjusted probability distribution. It then calls the redistribute function
+        rand = random.random()
+        search = 0.0
+        #print(rand)
+        if(roll != 0):
+            self.redistribute(roll)
+            return roll
+        for i in range(2, 13):
+            search += self.prob.get(i)
+            if(rand < search):
+                self.redistribute(i)
                 return i
-        return -1
+            
+    def roll_red_die(self, roll):
+        # Generates a random dice roll for the red die
+        if(roll < 7):
+            red = random.randint(1, roll - 1)
+        else:
+            red = random.randint(roll - 6, 6)
+        return red
 
-    def print_times(self) -> None:
-        print()
-        for player in self.players:
-            print(f'{player.name}\'s average time was {self.time_format(player.get_average())}')
-        print()
-
-    def time_format(self, seconds: float) -> str:
-        if seconds > 60:
-            return f'{seconds // 60:.0f} minutes, {seconds % 60:.2f} seconds'
-        return f'{seconds:.2f} seconds'
+    def roll_boat_die(self):
+        # Randomly select a roll for the boat die. 1/2 chance it is barbarians, and 1/6 chance for each color
+        roll = random.randint(1,6)
+        if(roll >= 1 and roll <= 3):
+            return "Barbarians"
+        if(roll == 4):
+            return "🟦 Blue"
+        if(roll == 5):
+            return "🟩 Green"
+        return "🟨 Yellow"

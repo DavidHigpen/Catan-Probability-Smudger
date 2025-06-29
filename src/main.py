@@ -1,7 +1,8 @@
-from modules.game import Game
+from modules.gameCLI import GameCLI
 
 def main():
-    game: Game = Game()
+    game: GameCLI = GameCLI()
+    game.CLIinit()
 
 if __name__ == "__main__":
     main()
