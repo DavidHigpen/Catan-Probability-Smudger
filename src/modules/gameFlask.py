@@ -31,9 +31,6 @@ class GameFlask(Game):
             self.prevTurnStack[-1].turnLength = time
             self.handleTime(self.prevTurnStack[-1].currTurn, time)
 
-        # if(self.nextTurnStack): # if there were undos, call the previous turn that already exists
-            # self.prevTurnStack.append(self.nextTurnStack.pop())
-        # else: # create a new turn with the previous turn as a starting point for counters
         turn = deepcopy(self.prevTurnStack[-1]) if self.prevTurnStack else TurnData()
         turn.currTurn += 1 
         if(skip):
@@ -44,7 +41,6 @@ class GameFlask(Game):
             turn.red = self.roll_red_die(turn.roll)
         turn.turnLength = 0
         turn.player = self.players[turn.currTurn % self.playerCount]
-        # if(self.cities_and_knights):
         turn.barbarian = self.roll_boat_die()[0]
         if(turn.barbarian == "B"):
             turn.barbLevel += 1

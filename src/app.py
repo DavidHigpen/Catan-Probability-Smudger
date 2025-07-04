@@ -64,12 +64,6 @@ def get_turn_averages():
 def get_turns():
     return {"real": getRandomNums(72), "smudged": getSmudged(72)}
 
-# @app.route('/skip_turn_ajax', methods=['GET'])
-# def skip_turn_ajax():
-#     data = request.json
-#     game = gameStates.get(data["game_id"])
-#     return {"barb": game.roll_boat_die()}
-
 
 def getRandomNums(n):
     rolled = {i : 0 for i in range(2, 13)}
