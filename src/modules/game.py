@@ -2,7 +2,6 @@ from typing import List, Tuple
 import random
 from modules.constants import *
 
-
 class Game:
     def __init__(self):
         self.players = []
@@ -29,7 +28,6 @@ class Game:
         # Generates a random number and finds which roll that number represents to generate a pseudorandom roll with our adjusted probability distribution. It then calls the redistribute function
         rand = random.random()
         search = 0.0
-        #print(rand)
         if(roll != 0):
             self.redistribute(roll)
             return roll
@@ -50,7 +48,7 @@ class Game:
     def roll_boat_die(self):
         # Randomly select a roll for the boat die. 1/2 chance it is barbarians, and 1/6 chance for each color
         roll = random.randint(1,6)
-        if(roll >= 1 and roll <= 3):
+        if(roll <= 3):
             return "Barbarians"
         if(roll == 4):
             return "🟦 Blue"

@@ -1,19 +1,18 @@
-var gameInProgress = false;
-var citiesKnights = false;
+var gameSetup = false; // first roll has occured
+var gameInProgress = false; // game has been setup
+
+var citiesKnights = false; 
 var showDist = false;
 var showTime = false;
-var playerCount = 0;
+var showAverageTime = false;
+var playerCount = 0; // number of players
 var players = [];
-var barbLevel = 0;
-var turnStart = performance.now();
-var allRolls = [];
-var prevRolls = [];
-var nextRolls = [];
+var allRolls = {2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0};
 var currTurnLength = 0;
-var turnCount = -1;
-var turnLengths = [];
 var firstRoll = true;
 var clockIntervalId = null;
+var game_id = "";
+var spamPrevent = false;
 
 $(document).ready(function() {
     document.querySelectorAll('.dropdown-menu').forEach(menu => {
@@ -22,35 +21,77 @@ $(document).ready(function() {
         });
     });
 
+    $(document).on("click", "button, a", function() {
+        $(this).blur();
+    });
+
+    $(document).keydown(function(event) {
+        if(event.key === "Enter") {
+            if($('.how-it-works-modal').is(':visible')) {
+                rollExamples();
+            } else {
+                $("#rollBtn").click();
+            }
+        }
+    });
+
     $("#rollBtn").click(function() {
-        rollDice();
-        // $("#rollBtn").prop("disabled", true);
-        setTimeout(() => {
-            $("#rollBtn").prop("disabled", false);
-        }, 1000);
+        doTurn();
+    });
+
+    $("#skipBtn").click(function () {
+        doTurn(true);
+    });
+
+    $("#howItWorksBtn").click(function() {
+        rollExamples();
+        $('.how-it-works-modal').modal('show');
+    });
+
+    $("#rerollBtn").click(function() {
+        rollExamples();
     });
 
     $("#newGameBtn").click(function() {
-        $('.bd-example-modal-lg').modal('show');
+        $('.new-game-modal').modal('show');
     });
+
+    $("#finishBtn").click(function() {
+        finishGame();
+    });
+
+    $("#pauseBtn").click(function() {
+        if(!gameInProgress) return;
+        if(clockIntervalId !== null) {
+            clearInterval(clockIntervalId);
+            clockIntervalId = null;
+            $("#pauseBtn").text("Resume");
+        } else {
+            resetClockInterval();
+        }
+    })
 
     $("#toggleDist").click(function() {
         showDist = $("#toggleDist").is(":checked");
-        if(gameInProgress) {
+        if(gameSetup) {
             $("#probDist").toggle(showDist);
         }
     });
 
     $("#new-game-form").submit(function(event) {
         startGame(event);
+        if(citiesKnights) {
+            $("#undoBtn").css("width", "40%");
+            $("#skipBtn").show();
+        } else {
+            $("#undoBtn").css("width", "90%");
+            $("#skipBtn").hide();
+        }
     });
 
     $("#undoBtn").click(function() {
+        if(!gameInProgress) return;
         undoTurn();
-        // $("#undoBtn").prop("disabled", true);
-        setTimeout(() => {
-            $("#undoBtn").prop("disabled", false);
-        }, 1000);
     });
 
     $("#toggleTime1").click(function() {
@@ -62,136 +103,95 @@ $(document).ready(function() {
     })
 
     $("#toggleTime2").click(function() {
-        showTime = $("#toggleTime2").is(":checked");
-        if(gameInProgress) {
-            $("#avg-time-text").toggle(showTime);
-            updateTimeAverages();
+        showAverageTime = $("#toggleTime2").is(":checked");
+        if(gameInProgress && showAverageTime) {
+            $("#avg-time-text").show();
+            populateTurnAverages();
         }
     })
 
     resetClockInterval();
 });
 
+function rollExamples() {
+    if(!spamTimer()) return;
+    fetch('/get_turns', {
+        method: 'GET',
+    })
+    .then(response => response.json())
+    .then(data => {
+        createPlot(data.real, Object.values(data.real).map(roll => roll.toString()), $("#real").width(), $("#real").height(), "real", 15);
+        createPlot(data.smudged, Object.values(data.smudged).map(roll => roll.toString()), $("#smudged").width(), $("#smudged").height(), "smudged", 15);
+    })
+}
+
+function populateTurnAverages() {
+    fetch(`/get_turn_averages?game_id=${game_id}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(err => {
+                throw new Error(err.error || "Unknown error");
+            }).catch(() => {
+                throw new Error("Failed to fetch turn averages.");
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        $("#modal-time-text").html(data.averageTurns);
+        $("#player-time-summary").html(data.averageTurns);
+    })
+    .catch(error => {
+        console.error("Error fetching turn averages:", error.message);
+        $("#modal-time-text").html("Error fetching averages.");
+        $("#player-time-summary").html("Error fetching averages.");
+    });
+}
+
+
+function init() {
+    $("#barb-text").text("");
+    $("#roll-text").text("");
+    $("#barbBoard").prop("src", "/static/Barb1.png");
+    $("#barbBoardDiv").toggle(citiesKnights);
+    $("#probDist").toggle(showDist);
+    createPlot([0.02777, 0.05555, 0.083333, 0.11111, 0.13888, 0.1666, 0.13888, 0.1111, 0.083333, 0.05555, 0.02777], ["3%", "6%", "8%", "11%", "14%", "17%", "14%", "11%", "8%", "6%", "3%"], $("#resultDiv").width() * 0.7, $("#resultDiv").height() * 0.3, "probDist", .26);
+
+    $("#time-text").toggle(false);
+    $("#avg-time-text").toggle(false);
+    gameSetup = true;
+    gameInProgress = false;
+    allRolls = {2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0};
+    currTurnLength = 0;
+}
+
 function resetClockInterval() {
+    $("#pauseBtn").text("Pause");
     clearInterval(clockIntervalId);
 
     clockIntervalId = setInterval(() => {
-        currTurnLength += 1;
+        currTurnLength += 0.1;
         updateTime();
-    }, 1000);
+    }, 100);
 }
 
 function updateTime() {
     const durationMin = Math.floor(currTurnLength / 60);
-    const durationSec = (currTurnLength) % 60;
+    const durationSec = Math.floor((currTurnLength) % 60);
     if(showTime && gameInProgress) {
         $("#time-text").text("Time since last turn: " + (durationMin > 0 ? durationMin + "min " : "") + durationSec.toFixed(0) + "s");
     }
 }
 
-function updateTimeAverages() {
-    let message = "Average turn times: ";
-    $.each(players, function(index, player) {
-        message += (player + ": " + (turnLengths[index].reduce((a, b) => a + b, 0) / turnLengths[index].length).toFixed(1) + "s, ");
-    });
-    $("#avg-time-text").text(message);
-}
-
-function rollDice() {
-    if(gameInProgress) {
-        resetClockInterval(); // start counting
-        if(!firstRoll && turnLengths[turnCount % playerCount].length > Math.floor(turnCount / playerCount)) {
-            turnLengths[turnCount % playerCount][Math.floor(turnCount / playerCount)] = currTurnLength;
-            console.log("turn timer exists already, updating list");
-        } else if(!firstRoll) {
-            turnLengths[turnCount % playerCount].push(currTurnLength);
-            console.log("this is a new turn!");
-        }
-        updateTimeAverages();
-        console.log(turnLengths);
-        firstRoll = false;
-        turnCount += 1;
-        if(nextRolls.length > 1) {
-            currTurnLength = turnLengths[turnCount % playerCount][Math.floor(turnCount / playerCount)];
-            if(currTurnLength === undefined) {
-                currTurnLength = 0;
-            }
-            handleTurn(nextRolls.pop());
-        } else {
-            $("#time-text").text("Time since last turn: 0s");
-            turnStart = performance.now();
-            fetch('/roll_dice_ajax', {
-                method: 'POST',
-            })
-            .then(response => {
-                if(!response.ok) {
-                    alert("Error rolling dice: " + response.statusText);
-                    return;
-                }
-                return response.json();
-            })
-            .then(data => {
-                if(showTime) {
-                    $("#time-text").show();
-                }
-                currTurnLength = 0;
-                handleTurn(data);
-                allRolls.push(data.roll);
-            });
-        }
-    }
-}
-
-function handleTurn(currRoll) {
-    if(currRoll.barbarian === "B" || currRoll.barbarian === "A") {
-        barbLevel = barbLevel + 1;
-    }
-    barbLevel %= 7;
-    setDisplay(currRoll);
-    prevRolls.push(currRoll);
-    updateTime();
-}
-
-function setDisplay(data) {
-    $("#player-text").text("It is " + players[turnCount % playerCount] + "'s turn");
-    if(citiesKnights) {
-        if(data.barbarian === "B") {
-            $("#barb-text").text("Barbarians Advance");
-        } else if(data.barbarian === "A") {
-            $("#barb-text").text("Barbarian Attack!");
-            barbLevel = 7;
-        } else {
-            $("#barb-text").text(data.barbarian + " " + data.red);
-        }
-        $("#barbBoard").prop("src", "/static/Barb" + (barbLevel + 1) + ".png");
-    }
-    console.log(barbLevel);
-    $("#roll-text").text("Roll: " + data.roll);
-    createPlot(data.prob, data.probLabels);
-}
-
-function undoTurn() {
-    if(gameInProgress && prevRolls.length > 1) {
-        resetClockInterval();
-        console.log(turnLengths);
-        turnCount -= 1;
-        const lastRoll = prevRolls[prevRolls.length - 2];
-        currTurnLength = turnLengths[turnCount % playerCount][Math.floor(turnCount / playerCount)];
-        updateTime();
-        if(prevRolls[prevRolls.length - 1].barbarian === "B" || prevRolls[prevRolls.length - 1].barbarian === "A") {
-            barbLevel -= 1;
-        }
-        nextRolls.push(prevRolls.pop());
-        setDisplay(lastRoll);
-    } else {
-        alert("No turns to undo.");
-    }
-}
-
 function startGame(event) {
-    event.preventDefault(); // Prevent the default form submission
+    if(!spamTimer()) return;
+    event.preventDefault(); 
 
-    // Retrieve values from the input fields
     var player1 = $("input[name='player1']").val();
     var player2 = $("input[name='player2']").val();
     var player3 = $("input[name='player3']").val();
@@ -199,71 +199,159 @@ function startGame(event) {
     var player5 = $("input[name='player5']").val();
     var player6 = $("input[name='player6']").val();
 
-    // Retrieve the checkbox value
     citiesKnights = $("#citiesKnights").is(":checked");
-    $("#barbBoard").toggle(citiesKnights);
+    if(citiesKnights) {
+        $("#barbBoardDiv").show();
+        $("#playerBoardDiv").width("50%");
+    } else {
+        $("#barbBoardDiv").hide();
+        $("#playerBoardDiv").width("100%");
+    }
     $("#barb-text").toggle(citiesKnights);
 
-    // You can now send this data to the server via AJAX or process it further
-    $.ajax({
-        url: '/new_game',
+    fetch('/new_game', {
         method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify({
-            players: [player1, player2, player3, player4, player5, player6].join(","),
-            ck: citiesKnights
-        }),
-        success: function(response) {
-            playerCount = response.player_count;
-            console.log("Game started successfully! Player count: " + playerCount);
-            $('.bd-example-modal-lg').modal('hide');
-            $("#player-text").text("Hit 'Roll Dice' to start " + response.players[0] + "'s turn");
-            init();
-            turnLengths = response.players.map(() => [0]);
-            players = response.players;
+        headers: {
+            'Content-Type': 'application/json'
         },
-        error: function(xhr) {
-            console.error("Error starting game:", xhr.status, xhr.responseJSON?.error || xhr.responseText);
-
-            alert("Error: " + (xhr.responseJSON?.error || "An unexpected error occurred"));
- 
+        body: JSON.stringify({
+            players: [player1, player2, player3, player4, player5, player6].join(","),
+            ck: citiesKnights,
+            game_id: game_id, 
+        }),
+    })
+    .then(response => {
+        if(!response.ok) {
+            throw new Error("Failed to start game");
         }
+        return response.json();
+    })
+    .then((data) => {
+        playerCount = data.playerCount;
+        $('.new-game-modal').modal('hide');
+        $("#player-text").text("Hit 'Roll Dice' to start " + data.players[0] + "'s turn");
+        init();
+        players = data.players;
+        game_id = data.game_id;
+    })
+    .catch((error) => {
+        console.error("Error starting the game:", error);
+        alert("There was an error starting the game. Please try again.");
     });
-
 }
 
-function init() {
-    $("#barb-text").text("");
-    $("#roll-text").text("");
-    createPlot([2.777, 5.555, 8.3333, 11.111, 13.888, 16.66, 13.888, 11.11, 8.3333, 5.555, 2.777], ["3%", "6%", "8%", "11%", "14%", "17%", "14%", "11%", "8%", "6%", "3%"]);
-    $("#barbBoard").prop("src", "/static/Barb1.png");
-    $("#barbBoard").toggle(citiesKnights);
-    $("#time-text").toggle(false);
-    $("#avg-time-text").toggle(false);
+function doTurn(skip = false) {
+    if(!spamTimer()) return;
+    if(!gameSetup) return;
+    if(!gameInProgress) {
+        $("#time-text").toggle(showTime);
+        $("#avg-time-text").toggle(showAverageTime);
+    }
     gameInProgress = true;
-    barbLevel = 0;
-    turnStart = performance.now();
-    allRolls = [];
-    prevRolls = [];
-    nextRolls = [];
-    currTurnLength = 0;
-    turnCount = -1;
-    turnLengths = [];
-    firstRoll = true;
+    resetClockInterval(); // start counting
+    fetch('/do_turn_ajax', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+            time: Math.round(currTurnLength),
+            skip: skip,
+            game_id: game_id,
+        })
+    })
+    .then(response => {
+        if(!response.ok) {
+            throw new Error("Failed to roll dice");
+        }
+        return response.json();
+    })
+    .then((data) => {
+        if(showTime) {
+            $("#time-text").show();
+        }
+        handleTurn(data.turn);
+        $("#avg-time-text").html(data.averageTurns);
+
+        allRolls[data.turn.roll] += 1;
+    })
+    .catch((error) => {
+        alert("There was an error rolling the dice. Please try again.");
+    })
 }
 
-function createPlot(prob, probLabels) {
+function undoTurn() {
+    if(!spamTimer()) return;
+    fetch('/undo_turn_ajax', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            game_id: game_id,
+        }),
+    })
+    .then(response => {
+        if(!response.ok) {
+            throw new Error("Failed to undo turn");
+        }
+        return response.json();
+    })
+    .then((data) => {
+        handleTurn(data.turn);
+    })
+    .catch((error) => {
+        alert("There was an error undoing the turn. Please try again.");
+    });
+}
+
+function handleTurn(currRoll) {
+    currTurnLength = currRoll.turnLength;
+    setDisplay(currRoll);
+    updateTime();
+}
+
+function finishGame() {
+    if($("#player-text").text().trim() === "Hit \"New Game\" to get started") return;
+    if(gameInProgress && !confirm("Would you like to finish the game? You will not be able to undo turns or roll again.")) return;
+    $('.game-finish-modal').modal('show');
+    gameSetup = false;
+    gameInProgress = false;
+    createPlot(allRolls, Object.values(allRolls).map(roll => roll.toString()), $("#dice-roll-chart").width(), $("#dice-roll-chart").height(), "dice-roll-chart", 1);
+    $("#total-rolls-text").html("Total Rolls: " + Object.values(allRolls).reduce((a, b) => a + b, 0));
+    populateTurnAverages();
+}
+
+function setDisplay(data) {
+    $("#player-text").text("It is " + data.player + "'s turn");
+    if(citiesKnights) {
+        if(data.barbarian === "B") {
+            $("#barb-text").text("Barbarians Advance");
+        } else if(data.barbarian === "A") {
+            $("#barb-text").text("Barbarian Attack!");
+            data.barbLevel = 7;
+        } else {
+            $("#barb-text").text(data.barbarian + " " + data.red);
+        }
+        $("#barbBoard").prop("src", "/static/Barb" + (data.barbLevel + 1) + ".png");
+    }
+    $("#roll-text").text("Roll: " + data.roll);
+    createPlot(data.probs, data.probLabels, $("#resultDiv").width() * 0.7, $("#resultDiv").height() * 0.3, "probDist", .26);
+}
+
+function createPlot(values, labels, width, height, divName, minmax) {
     var graphData = [
         {
         type: "bar",
-        y: Object.values(prob),
+        y: Object.values(values),
         x: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-        texttemplate: probLabels,
+        texttemplate: labels,
         textposition: 'top'
         },
     ];
 
     color = "rgba(0, 0, 0, 0.5)";
+    let max = Math.max(minmax, ...Object.values(values));
     var layout = { 
         margin: {
             b: 40, t: 40, l: 40, r: 40,
@@ -276,15 +364,23 @@ function createPlot(prob, probLabels) {
         yaxis: {
             visible: false,
             autorange: false,
-            range: [0, 26],
-            // showgrid: false,
+            range: [0, max],
         },
-        width: $("#resultDiv").width() * 0.7,
-        height: $("#resultDiv").height() * 0.3,
+        width: width,
+        height: height,
         paper_bgcolor: 'rgba(255, 255, 255, 0)', 
         plot_bgcolor: 'rgba(255, 255, 255, 0)'
 
     };
     var config = { staticPlot: true };
-    Plotly.newPlot("probDist", graphData, layout, config);
+    Plotly.newPlot(divName, graphData, layout, config);
+}
+
+function spamTimer(wait = 250) {
+    if(spamPrevent) return false;
+    spamPrevent = true;
+    setTimeout(() => {
+        spamPrevent = false;
+    }, wait);
+    return true;
 }

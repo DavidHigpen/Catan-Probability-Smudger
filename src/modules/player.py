@@ -1,6 +1,6 @@
 from typing import List
 
-class Person:
+class Player:
 
     def __init__(self, name: str) -> None:
         self.name: str = name

@@ -1,5 +1,5 @@
 from modules.game import Game
-from modules.people import Person
+from modules.player import Player
 from modules.print_functions import print_barb_board, print_dict, print_help
 import time
 
@@ -13,16 +13,16 @@ class GameCLI(Game):
 
     def create_people(self) -> None:
         while(True):
-            person: str = input('Enter a player, type "done" to be done: ')
-            if(not person):
+            player: str = input('Enter a player, type "done" to be done: ')
+            if(not player):
                 print('Please enter a valid player name')
                 continue
-            if(person.lower() == 'done'):
+            if(player.lower() == 'done'):
                 if(not self.players):
                     print('Please enter more players')
                     continue
                 break
-            self.players.append(Person(person))
+            self.players.append(Player(player))
 
     def ask_cities_and_knights(self):
         self.cities_and_knights = input("Are you playing Cities and Knights? (y/n)") == "y"
@@ -95,10 +95,10 @@ class GameCLI(Game):
         else:
             print('Invalid command')
         
-    def find_player(self, person):
-        # Return index of the list where person is in people
+    def find_player(self, player):
+        # Return index of the list where player is in people
         for i, player in enumerate(self.players):
-            if person == player.name:
+            if player == player.name:
                 return i
         return -1
 

@@ -55,3 +55,17 @@ def check_sum(prob):
         total += prob[i]
     if abs(total - 1) > 1e-9:
         raise ValueError("Total probability is not 1.")
+
+
+def getRandomNums(n):
+    rolled = {i : 0 for i in range(2, 13)}
+    for i in range(n):
+        rolled[random.randint(1, 6) + random.randint(1, 6)] += 1
+    return rolled
+
+def getSmudged(n):
+    game = Game()
+    rolled = {i : 0 for i in range(2, 13)}
+    for i in range(n):
+        rolled[game.roll_dice()] += 1
+    return rolled

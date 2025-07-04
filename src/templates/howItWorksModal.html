@@ -1,0 +1,71 @@
+<div class="modal fade how-it-works-modal" role="dialog">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content p-4">
+            <div class="modal-header">
+                <h5 class="modal-title" id="myLargeModalLabel">How It Works</h5>
+                <button type="button" class="btn-close ms-auto" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body">
+              <h2>Purpose</h2>
+              <p>
+                We all know the frustration in investing in 6's and 8's, only to watch your opponent get rich in resources as the 4's and 10's don't stop coming. Surely after two rounds of no red numbers being rolled, one's <i>gotta</i> be “due to come.”.<br>
+                Of course, this is not how probability works — sometimes rolling 2's or 11's is just what randomness gives you.<br>
+                So I set out to fix randomness in Catan — not by removing it, but by smudging the dice just enough to make things feel a little "more normal".
+              </p>
+
+              <h2>How It Works</h2>
+              <p>
+                At the beginning of the game, each dice roll is assigned its true probability. Each roll will generate a number from 2 to 12 based on their stored probabilities. It will then decrease the probability of the rolled number by some fine tuned constant (pretty small, around 1/36). From there, it will distribute that 1/36 to all dice rolls <i>proportionally</i> to their base probability.<br>
+                For example, if a 6 is rolled:<br>
+                <ul>
+                  <li>
+                    Decrease the probability of rolling a 6 by 1/36
+                  </li>
+                  <li>
+                    Increase the probability of rolling a 2 and 12 by 1/36<sup>2</sup>
+                  </li>
+                  <li>
+                    Increase the probability of rolling a 3 and 11 by 2/36<sup>2</sup>
+                  </li>
+                  <li>
+                    ...
+                  </li>
+                  <li>
+                    7 increased by 6/36<sup>2</sup>
+                  </li>
+                </ul>
+                This means that high-frequency numbers replenish faster — so 6's and 8's won't be endlessly punished, and rarer numbers won't keep overperforming. It smooths out some randomness without eliminating it.
+              </p>
+
+              <div style="display: flex; flex-direction: row; width: 100%">
+                <h2 style="margin-right: 2rem">Distribution Examples</h2> 
+                <button type="button" class="btn btn-success" id="rerollBtn">Reroll</button>
+              </div>
+              <p>Below are two histograms generated from 72 rolls (about how many dice are rolled in a game of Catan)
+                <ul>
+                  <li>
+                    The left graph shows results from fair dice
+                  </li>
+                  <li>
+                    The right uses the smudged algorithm.
+                  </li>
+                </ul>
+                You'll notice that the fair dice can produce very uneven distributions — some numbers appear far more or less often than expected, creating sharp spikes or dips in the histogram.<br>
+                The smudged dice don't eliminate chance, but they tighten the standard deviation, producing a more consistent curve on average.<br>
+                Click through to view more examples and compare for yourself.
+
+              <div style="display: flex; flex-direction: row; width: 100%; justify-content: center;">
+                <div id="real" style="width: 30vw; height: 26vh"></div>
+                <div id="smudged" style="width: 30vw; height: 26vh"></div>
+              </div>
+
+              <h2>Share Your Thoughts</h2>
+              <p>Suggestions? Feel free to let me know! Whether it be bug fixes, feature requests, algorithm improvements, or anything else. Email me at [email]. If you know someone who'd find this project interesting, please share the website.</p>
+
+            </div>
+
+
+        </div>
+    </div>
+</div>
