@@ -1,0 +1,434 @@
+:root {
+    --popup-bg-color: rgba(20, 1, 1, 0.8); 
+}
+
+html {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background-image: url('woodBackground.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+
+    display: flex;
+    height: 100%;
+}
+
+nav {
+    flex: 0 0 auto;
+}
+
+span {
+    display: block;
+    margin-bottom: 0.5em;
+}
+
+.btn-custom {
+    /* background: lightgreen !important; */
+    /* border: 2px solid red !important; */
+    /* padding: 10px 20px !important; */
+    /* display: inline-block !important;
+    position: relative !important;
+    z-index: 9999 !important; */
+
+    background-color: #382922;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-custom:hover {
+    background-color: #412f27;
+    transform: translateY(-1px);
+    color: black;
+    font-weight: bold;
+}
+
+.btn-custom:active {
+    background-color: #362016 !important;
+    color: white;
+    transform: translateY(0);
+}
+
+
+.nav-link {
+    cursor: pointer;
+    color: white;
+    margin-left: 1.5rem;
+}
+
+.navbar {
+    display: block;
+}
+
+.nav-link, .navbar-brand, #player-text {
+    user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+}
+
+br.spaced {
+    display: block;
+    margin-bottom: 0.5em;
+  }
+
+
+* {
+    color: white;
+}
+
+.modal-content {
+    background-color: var(--popup-bg-color);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    /* border-right: 1px solid rgba(255, 255, 255, 0.2); */
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+.btn-close, .navbar-toggler-icon {
+    --bs-btn-close-color: white;
+}
+
+.fullBody {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-right: 5%;
+}
+
+.subbutton-container {
+    /* margin: 5%; */
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 15%;
+    margin-bottom: 3.5rem;
+}
+
+.modal {
+    z-index: 1055;
+    /* display: block; */
+}
+
+.modal-backdrop {
+    z-index: 1050;
+}
+
+.form-group {
+    margin: 1rem;
+}
+
+.large-btn {
+    width: 90%;
+    font-size: 3rem;
+    margin: 5% 5%;
+    justify-content: center;
+    align-items: center;
+}
+
+.small-btn {
+    width: 40%;
+    height: 100%;
+    font-size: 2rem;
+    margin: 5% 5%;
+}
+
+.dropdown-menu {
+    font-size: 1rem;
+    background-color: var(--popup-bg-color);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+button:disabled {
+    opacity: 1;
+    pointer-events: none;
+    cursor: default;
+}
+
+#mainResultsDiv {
+    width: 100vw;
+    height: 100%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#mainRollDiv {
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    height: 50%;
+    width: 80%
+}
+
+#probDist {
+    width: 60%;
+    height: 100%;
+    display: none;
+    /* margin-bottom: 0.5rem */
+}
+
+.statsDiv {
+    display: none;
+    /* display: flex; */
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    height: 30%;
+    margin-bottom: 1rem;
+}
+
+#timeDiv {
+    display: none;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    /* width: 50%; */
+    height: 100%;
+    flex: 1;
+}
+
+#time-text, #avg-time-text {
+    width: 50%;
+    font-size: 5vw;
+    display: none;
+    margin: 1rem;
+}
+/* 
+#time-text {
+    font-size: 5vw;
+} 
+*/
+.mainBody {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 94%;
+    flex: 1;
+}
+
+#playerBoardDiv {
+    margin-right: 3rem;
+    width: 100%
+}
+
+#dice_row {
+    display: flex;
+    flex-direction: row;
+    /* justify-content: center; */
+    justify-content: space-between;
+    align-items: center;
+    aspect-ratio: 3 / 1;
+    padding: 0.26rem;
+    box-sizing: border-box;
+    width: 50%;
+    height: auto;
+    max-height: 100%;
+}
+
+#barbBoardDiv {
+    aspect-ratio: 6.05 / 5.54;
+  
+    width: 50%;
+    height: auto;
+
+    max-height: 100%;
+  
+    background-image: url('BarbBoards.png');
+    background-size: 200% 400%;
+    background-repeat: no-repeat;
+    /* background-position: 0% 0%; */
+    /* background-size: cover; */
+    background-position: center;
+    display: none;
+  
+    margin: auto;
+}
+
+.dice_image {
+    height: 100%;
+    aspect-ratio: 1/1;
+    color-scheme: light;
+    background-image: url('catanDice.png');
+    background-size: 400% 400%;
+    background-repeat: no-repeat;
+    border: 6px solid #000000 !important;
+    border-radius: 26px;
+    display: none;
+}
+
+#die1 {
+    background-position: 0% 0%;
+}
+
+#die2 {
+    background-position: 0% 0%;
+}
+
+#die3 {
+    background-position: 0% 0%;
+}
+
+#buttonReveal {
+    display: none;
+}
+
+.offcanvas {
+    width: 30%;
+    height: 100%;
+}
+
+.offcanvas-body {
+    width: 100%;
+}
+
+.offcanvas-scroll-fix {
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 1rem;
+    box-sizing: border-box;
+}
+
+.offcanvas-end, .offcanvas-bottom {
+    background-color: var(--popup-bg-color);
+    backdrop-filter: blur(15px) saturate(180%);
+    -webkit-backdrop-filter: blur(15px) saturate(180%);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.3);
+    color: white;
+}
+
+.exampleDist {
+    width: 26vw;
+    height: 26vh;
+    margin: 1.0rem
+}
+
+.exampleDistContainer {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 60vh;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+#real, #smudged {
+    width: 50%;
+    height: 100%;
+}
+
+#dice-roll-chart {
+    width: 100%;
+    height: 50vh;
+}
+
+#player-text {
+    margin: 0.5rem;
+    font-size: 3rem;
+    height: 10%
+}
+
+#rotateModal {
+    display: none;
+}
+
+@media (orientation: portrait) {
+    body {
+        height: 100%;
+    }
+
+    .mainBody {
+        flex-direction: column;
+    }
+
+    #mainRollDiv {
+        flex-direction: column;
+        width: 90%;
+        /* flex: 1; */
+    }
+
+    #dice_row {
+        width: 100%;
+        height: auto;
+        max-width: 90%;
+        max-height: 90%;
+    }
+
+    #barbBoardDiv {
+        width: auto;
+        height: 100%;
+    }
+
+    .offcanvas.offcanvas-bottom {
+        width: 100%;
+        height: 80vh;
+    }
+
+    #player-text {
+        font-size: 2rem;
+    }
+
+    .exampleDistContainer {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        height: 40vh;
+        justify-content: center;
+    }
+
+    #real, #smudged {
+        width: 90%;
+        height: 50%;
+    }
+    
+    .statsDiv {
+        width: 90%;
+    }
+
+    .btn-close, .navbar-toggler-icon {
+        filter: invert(1);
+        --bs-btn-close-color: white;
+    }
+
+    #avg-time-text {
+        font-size: 3vw;
+    }
+}
+
+@media only screen and (orientation: landscape) and (max-width: 768px) {
+    #mainResultsDiv, .navbar, #buttonReveal {
+        display: none;
+    }
+
+    #rotateModal {
+        display: block;
+    }
+}
