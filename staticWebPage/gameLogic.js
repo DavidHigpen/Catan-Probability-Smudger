@@ -1,8 +1,9 @@
 class Game {
   constructor(players = [], citiesAndKnights = false) {
+    this.gameId = Math.random().toString(16).slice(2);
     this.players = players.filter(Boolean);
     this.person = "";
-    this.cities_and_knights = citiesAndKnights;
+    this.citiesAndKnights = citiesAndKnights;
     this.current_turn = 0;
     this.barb_ship_counter = 0;
 
@@ -20,6 +21,16 @@ class Game {
       .map(() => []);
   }
 
+  normalize() {
+    let totalprob = 0;
+    for (let i = 2; i < 13; i++) {
+        totalprob += this.prob[i];
+    }
+    for (let i = 2; i < 13; i++) {
+        this.prob[i] /= totalprob;
+    }
+  }
+
   redistribute(number) {
     let adjustProb = this.CONSTANT_REMOVE;
     if (this.prob[number] < adjustProb) {
@@ -30,6 +41,7 @@ class Game {
     for (let i = 2; i <= 12; i++) {
       this.prob[i] += (adjustProb * this.probIncr[i]) / adjustProb;
     }
+    this.normalize();
   }
 
   rollDice() {

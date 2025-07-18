@@ -9,11 +9,12 @@ var allRolls = {2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12
 var currTurnLength = 0;
 var firstRoll = true;
 var clockIntervalId = null;
-var game_id = "";
 var spamPrevent = false;
 var game = null;
 var inputPaused = false;
 var openModal = null;
+var firstEndGame = null;
+var userId = null;
 
 // These vars are for the example distributions
 var real = {};
@@ -41,7 +42,7 @@ const diceRow = document.getElementById("dice_row");
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(function (registration) {
-        console.log('ServiceWorker registered:', registration);
+        // console.log('ServiceWorker registered:', registration);
     }).catch(function (error) {
         console.log('ServiceWorker failed:', error);
     });
@@ -75,15 +76,15 @@ mql.addEventListener('change', handleOrientationChange);
 handleOrientationChange(mql);
 
 document.addEventListener("DOMContentLoaded", () => {
-
-    offcanvasEl.addEventListener('show.bs.offcanvas', () => {
-        buttonReveal.style.display = 'none';
-    });
-
-    offcanvasEl.addEventListener('hidden.bs.offcanvas', () => {
-        buttonReveal.style.display = 'block';
-    });
-
+    userId = localStorage.getItem("userId");
+    if (!userId) {
+        userId = crypto.randomUUID(); // Generate a new unique ID
+        localStorage.setItem("userId", userId);
+        console.log("Generated new user ID:", userId);
+    } else {
+        console.log("Loaded existing user ID:", userId);
+    }
+    
 
     if(!isMobile()) {
         timeText.style.fontSize = "3vw";
@@ -259,6 +260,7 @@ function populateTurnAverages() {
 
 
 function init() {
+    firstEndGame = true;
     die1.style.display = "none";
     die2.style.display = "none";
     die3.style.display = "none";
@@ -280,16 +282,24 @@ function init() {
 
     if (citiesKnights) {
         diceRow.style.aspectRatio = "3/1";
+        diceRow.style.width = "90%";
         timeDiv.style.flexDirection = "row";
         skipBtn.style.display = "inline-block";
         mainRollDiv.style.height = "50%";
         mainRollDiv.style.width = "90%";
+        if(!isMobile()) {
+            diceRow.style.width = "40%";
+        }
     } else {
         diceRow.style.aspectRatio = "2/1";
+        diceRow.style.width = "60%";
         timeDiv.style.flexDirection = "column";
         skipBtn.style.display = "none";
         mainRollDiv.style.height = "26%";
-        mainRollDiv.style.width = "60%";
+        mainRollDiv.style.width = "100%";
+        if(!isMobile()) {
+            diceRow.style.width = "30%";
+        }
     }
 
     if(!isHorizontal() && showDist && (showAverageTime || showTime)){
@@ -297,6 +307,7 @@ function init() {
     } else {
         timeDiv.style.flexDirection = "row";
     }
+
 }
 
 function resetClockInterval() {
@@ -403,12 +414,48 @@ function finishGame() {
     finishModal.show();
 
     game.handleTime(currTurnLength);
+    logEndGame();
     finishModalEl.addEventListener('shown.bs.modal', function () {
         drawFinishGamePlot();
     }, { once: true });
     document.getElementById("total-rolls-text").innerHTML = "Total Rolls: " + Object.values(allRolls).reduce((a, b) => a + b, 0);
     populateTurnAverages();
     clearInterval(clockIntervalId);
+    firstEndGame = false;
+}
+
+function logEndGame() {
+    if(!game) return;
+    let totalTime = 0;
+    for (const time in game.turnTimes) {
+        totalTime += game.turnTimes[time].reduce((a, b) => a + b, 0);
+    }
+    fetch("https://script.google.com/macros/s/AKfycbwMs46XaG7ic9Nw32RYnmIuXnsz9u-sDFzt3-gbbsh0-3LZHfvmcsGK_pmZCUNbEak/exec", {
+        method: "POST",
+        redirect: "follow",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify({
+            sheetname: "EndGame",
+            browserInfo: navigator.userAgent,
+            firstEndGame: firstEndGame,
+            allRolls: JSON.stringify(allRolls),
+            citiesAndKnights: game.citiesAndKnights,
+            prevTurnStack: JSON.stringify(game.prevTurnStack),
+            turnTimes: JSON.stringify(game.turnTimes),
+            totalTime: totalTime,
+            rollCount: game.prevTurnStack.length,
+            gameId: game ? game.gameId : "",
+            userId: userId,
+        })
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Network response was not ok: " + res.statusText);
+        }
+    })
+    .catch(err => console.error("Fetch failed:", err));
 }
 
 function setDisplay(data) {
@@ -458,7 +505,7 @@ function createPlot(values, labels, width, height, divName, minmax, realValues =
             x: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
             texttemplate: labels,
             textposition: 'top',
-            // marker: { color: "rgba(0, 60, 255, 0.93)" },
+            marker: { color: "rgb(221, 68, 68)" },
         },
     ];
 
@@ -466,11 +513,9 @@ function createPlot(values, labels, width, height, divName, minmax, realValues =
         {
             type: "bar",
             y: realValues,
-            // y: [0.02777, 0.05555, 0.083333, 0.11111, 0.13888, 0.1666, 0.13888, 0.1111, 0.083333, 0.05555, 0.02777],
             x: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
-            // texttemplate: ["3%", "6%", "8%", "11%", "14%", "17%", "14%", "11%", "8%", "6%", "3%"],
             textposition: 'top',
-            marker: { color: "rgba(200,200,200,0.4)" },
+            marker: { color: "rgba(226, 226, 226, 0.3)" },
         }
     ]
 
@@ -598,11 +643,13 @@ function setResize() {
     }
 
     if ((maxHeight * 6.05) / 5.54 > maxWidth) {
+        // barbBoardDiv.style.height = maxWidth * 5.54 / 6.05 + "px";
         barbBoardDiv.style.height = "auto";
         barbBoardDiv.style.width = maxWidth + "px";
     } else {
         barbBoardDiv.style.height = maxHeight + "px";
         barbBoardDiv.style.width = "auto";
+        // barbBoardDiv.style.width = maxHeight * 6.05 / 5.54 + "px";
     }
 
 }
@@ -627,7 +674,6 @@ function selectStartingPlayer(random) {
             } else {
                 const finalIndex = (tick - 1) % players.length;
                 setTimeout(() => setStartingDisplay(finalIndex), 500);
-                console.log(finalIndex);
             }
         }
 
