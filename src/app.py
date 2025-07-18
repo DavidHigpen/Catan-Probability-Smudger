@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from modules.gameFlask import GameFlask
 from modules.game import Game
 import random
@@ -6,6 +6,10 @@ import uuid
 
 app = Flask(__name__)
 gameStates = {}
+
+@app.route('/sw.js')
+def service_worker():
+    return send_from_directory('static', 'sw.js', mimetype='application/javascript')
 
 @app.after_request
 def add_cache_control(response):
@@ -17,7 +21,7 @@ def add_cache_control(response):
     return response
 
 @app.route("/")
-def hello_world():
+def index():
     return render_template('index.html')
 
 @app.route('/new_game', methods=['POST'])
@@ -50,7 +54,7 @@ def undo_turn_ajax():
     result = game.undoTurn()
     if(result):
         return result
-    return {"error": "No turn to undo"}, 500
+    return {"Status": "First turn"}
 
 @app.route('/get_turn_averages', methods=['GET'])
 def get_turn_averages():

@@ -15,6 +15,12 @@ var game_id = "";
 var spamPrevent = false;
 
 $(document).ready(function() {
+    if(isMobile()) {
+        $("#player-text").text("Tap anywhere to setup the game");
+    } else {
+        $("#player-text").text("Hit \"New Game\" to get started");
+    }
+
     document.querySelectorAll('.dropdown-menu').forEach(menu => {
         menu.addEventListener('click', function(event) {
             event.stopPropagation();
@@ -25,25 +31,36 @@ $(document).ready(function() {
         $(this).blur();
     });
 
+    // $("#textOutputDiv").on("touchstart", function (e) {
+    //     if(!gameSetup) {
+    //         $('.new-game-modal').modal('show');
+    //     }
+    //     doTurn();
+    // });
+
     $(document).keydown(function(event) {
         if(event.key === "Enter") {
             if($('.how-it-works-modal').is(':visible')) {
                 rollExamples();
             } else {
-                $("#rollBtn").click();
+                doTurn();
             }
         }
     });
 
-    $("#rollBtn").click(function() {
+    $(".rollBtn").click(function() {
         doTurn();
     });
 
-    $("#skipBtn").click(function () {
+    $(".skipBtn").click(function () {
         doTurn(true);
     });
 
-    $("#howItWorksBtn").click(function() {
+    $(".newGameBtn").click(function() {
+        $('.new-game-modal').modal('show');
+    });
+
+    $(".howItWorksBtn").click(function() {
         rollExamples();
         $('.how-it-works-modal').modal('show');
     });
@@ -52,27 +69,23 @@ $(document).ready(function() {
         rollExamples();
     });
 
-    $("#newGameBtn").click(function() {
-        $('.new-game-modal').modal('show');
-    });
-
-    $("#finishBtn").click(function() {
+    $(".finishBtn").click(function() {
         finishGame();
     });
 
-    $("#pauseBtn").click(function() {
+    $(".pauseBtn").click(function() {
         if(!gameInProgress) return;
         if(clockIntervalId !== null) {
             clearInterval(clockIntervalId);
             clockIntervalId = null;
-            $("#pauseBtn").text("Resume");
+            $(".pauseBtn").text("Resume");
         } else {
             resetClockInterval();
         }
     })
 
-    $("#toggleDist").click(function() {
-        showDist = $("#toggleDist").is(":checked");
+    $(".toggleDist").click(function() {
+        showDist = $(".toggleDist").is(":checked");
         if(gameSetup) {
             $("#probDist").toggle(showDist);
         }
@@ -81,29 +94,29 @@ $(document).ready(function() {
     $("#new-game-form").submit(function(event) {
         startGame(event);
         if(citiesKnights) {
-            $("#undoBtn").css("width", "40%");
-            $("#skipBtn").show();
+            $(".undoBtn").css("width", "40%");
+            $(".skipBtn").show();
         } else {
-            $("#undoBtn").css("width", "90%");
-            $("#skipBtn").hide();
+            $(".undoBtn").css("width", "90%");
+            $(".skipBtn").hide();
         }
     });
 
-    $("#undoBtn").click(function() {
+    $(".undoBtn").click(function() {
         if(!gameInProgress) return;
         undoTurn();
     });
 
-    $("#toggleTime1").click(function() {
-        showTime = $("#toggleTime1").is(":checked");
+    $(".toggleTime1").click(function() {
+        showTime = $(".toggleTime1").is(":checked");
         if(gameInProgress) {
             $("#time-text").toggle(showTime);
             updateTime();
         }
     })
 
-    $("#toggleTime2").click(function() {
-        showAverageTime = $("#toggleTime2").is(":checked");
+    $(".toggleTime2").click(function() {
+        showAverageTime = $(".toggleTime2").is(":checked");
         if(gameInProgress && showAverageTime) {
             $("#avg-time-text").show();
             populateTurnAverages();
@@ -155,12 +168,14 @@ function populateTurnAverages() {
 
 
 function init() {
-    $("#barb-text").text("");
-    $("#roll-text").text("");
-    $("#barbBoard").prop("src", "/static/Barb1.png");
-    $("#barbBoardDiv").toggle(citiesKnights);
+    $("#die1, #die2, #die3").hide();
+    // $("#barbBoard").prop("src", "/static/Barb1.png");
+    setBarbBoardVisible();
     $("#probDist").toggle(showDist);
-    createPlot([0.02777, 0.05555, 0.083333, 0.11111, 0.13888, 0.1666, 0.13888, 0.1111, 0.083333, 0.05555, 0.02777], ["3%", "6%", "8%", "11%", "14%", "17%", "14%", "11%", "8%", "6%", "3%"], $("#resultDiv").width() * 0.7, $("#resultDiv").height() * 0.3, "probDist", .26);
+    let width = isMobile() ? "80vh" : $("#textOutputDiv").width() * 0.8;
+    let height = isMobile() ? "17vh" : $("#textOutputDiv").height() * 0.3;
+    createPlot([0.02777, 0.05555, 0.083333, 0.11111, 0.13888, 0.1666, 0.13888, 0.1111, 0.083333, 0.05555, 0.02777], ["3%", "6%", "8%", "11%", "14%", "17%", "14%", "11%", "8%", "6%", "3%"], width, height, "probDist", .26);
+    // createPlot([0.02777, 0.05555, 0.083333, 0.11111, 0.13888, 0.1666, 0.13888, 0.1111, 0.083333, 0.05555, 0.02777], ["3%", "6%", "8%", "11%", "14%", "17%", "14%", "11%", "8%", "6%", "3%"], $("#probDist").width(), $("#probDist").height(), "probDist", .26);
 
     $("#time-text").toggle(false);
     $("#avg-time-text").toggle(false);
@@ -171,7 +186,7 @@ function init() {
 }
 
 function resetClockInterval() {
-    $("#pauseBtn").text("Pause");
+    $(".pauseBtn").text("Pause");
     clearInterval(clockIntervalId);
 
     clockIntervalId = setInterval(() => {
@@ -184,13 +199,15 @@ function updateTime() {
     const durationMin = Math.floor(currTurnLength / 60);
     const durationSec = Math.floor((currTurnLength) % 60);
     if(showTime && gameInProgress) {
-        $("#time-text").text("Time since last turn: " + (durationMin > 0 ? durationMin + "min " : "") + durationSec.toFixed(0) + "s");
+        $("#time-text").text("Time since last turn: " + durationMin + ":" + (durationSec < 10 ? "0" : "") + durationSec);
+            // (durationMin > 0 ? durationMin + "min " : "") + durationSec.toFixed(0) + "s");
     }
 }
 
-function startGame(event) {
-    if(!spamTimer()) return;
-    event.preventDefault(); 
+function startGame(event = null) {
+    $("#buttonReveal").show();
+    if(event)
+        event.preventDefault(); 
 
     var player1 = $("input[name='player1']").val();
     var player2 = $("input[name='player2']").val();
@@ -200,12 +217,9 @@ function startGame(event) {
     var player6 = $("input[name='player6']").val();
 
     citiesKnights = $("#citiesKnights").is(":checked");
-    if(citiesKnights) {
-        $("#barbBoardDiv").show();
+    setBarbBoardVisible();
+    if(!isMobile()) {
         $("#playerBoardDiv").width("50%");
-    } else {
-        $("#barbBoardDiv").hide();
-        $("#playerBoardDiv").width("100%");
     }
     $("#barb-text").toggle(citiesKnights);
 
@@ -246,6 +260,8 @@ function doTurn(skip = false) {
     if(!gameInProgress) {
         $("#time-text").toggle(showTime);
         $("#avg-time-text").toggle(showAverageTime);
+        // $("#die1, #die2").show();
+        if(citiesKnights) $("#die3").show();
     }
     gameInProgress = true;
     resetClockInterval(); // start counting
@@ -276,6 +292,7 @@ function doTurn(skip = false) {
         allRolls[data.turn.roll] += 1;
     })
     .catch((error) => {
+        console.error("Error rolling the dice:", error);
         alert("There was an error rolling the dice. Please try again.");
     })
 }
@@ -298,11 +315,12 @@ function undoTurn() {
         return response.json();
     })
     .then((data) => {
+        if('Status' in data) {
+            startGame();
+            return;
+        }
         handleTurn(data.turn);
     })
-    .catch((error) => {
-        alert("There was an error undoing the turn. Please try again.");
-    });
 }
 
 function handleTurn(currRoll) {
@@ -317,26 +335,54 @@ function finishGame() {
     $('.game-finish-modal').modal('show');
     gameSetup = false;
     gameInProgress = false;
-    createPlot(allRolls, Object.values(allRolls).map(roll => roll.toString()), $("#dice-roll-chart").width(), $("#dice-roll-chart").height(), "dice-roll-chart", 1);
+    createPlot(allRolls, Object.values(allRolls).map(roll => roll.toString()), $("#dice-roll-chart").width() * 0.8, $("#dice-roll-chart").height(), "dice-roll-chart", 1);
     $("#total-rolls-text").html("Total Rolls: " + Object.values(allRolls).reduce((a, b) => a + b, 0));
     populateTurnAverages();
+    $("#buttonReveal").hide();
 }
 
 function setDisplay(data) {
     $("#player-text").text("It is " + data.player + "'s turn");
     if(citiesKnights) {
-        if(data.barbarian === "B") {
-            $("#barb-text").text("Barbarians Advance");
-        } else if(data.barbarian === "A") {
-            $("#barb-text").text("Barbarian Attack!");
+        if(data.barbarian === "Barb") {
+            drawDie(12, "die3");
+        } else if (data.barbarian === "A") {
+            drawDie(12, "die3");
             data.barbLevel = 7;
+        } else if (data.barbarian === "Y") {
+            drawDie(13, "die3");
+        } else if (data.barbarian === "B") {
+            drawDie(14, "die3");
         } else {
-            $("#barb-text").text(data.barbarian + " " + data.red);
+            drawDie(15, "die3");
         }
-        $("#barbBoard").prop("src", "/static/Barb" + (data.barbLevel + 1) + ".png");
+        // $("#barbBoard").prop("src", "/static/Barb" + (data.barbLevel + 1) + ".png");
+        drawBarbBoard(data.barbLevel);
     }
-    $("#roll-text").text("Roll: " + data.roll);
-    createPlot(data.probs, data.probLabels, $("#resultDiv").width() * 0.7, $("#resultDiv").height() * 0.3, "probDist", .26);
+    // $("#roll-text").text("Roll: " + data.roll);
+    if(data.roll === "Turn Skipped") {
+        $("#die1, #die2").hide();
+    } else {
+        $("#die1, #die2").show();
+        drawDie(6 + data.roll - data.red - 1, "die1");
+        drawDie(data.red - 1, "die2");
+    }
+    let width = isMobile() ? "80vh" : $("#textOutputDiv").width() * 0.8;
+    let height = isMobile() ? "17vh" : $("#textOutputDiv").height() * 0.3;
+    createPlot(data.probs, data.probLabels, width, height, "probDist", .26);
+}
+
+function drawBarbBoard(level) {
+    console.log("setting barb board to level " + level);
+    const col = level % 2;
+    const row = Math.floor(level / 2);
+    $("#barbBoardDiv").css("background-position", `${col * 100}% ${row * 100 / 3}%`);
+}
+
+function drawDie(roll, divName) {
+    const col = roll % 4;
+    const row = Math.floor(roll / 4);
+    $("#" + divName).css("background-position", `${col * 100 / 3}% ${row * 100 / 3}%`);
 }
 
 function createPlot(values, labels, width, height, divName, minmax) {
@@ -354,12 +400,12 @@ function createPlot(values, labels, width, height, divName, minmax) {
     let max = Math.max(minmax, ...Object.values(values));
     var layout = { 
         margin: {
-            b: 40, t: 40, l: 40, r: 40,
+            b: 0, t: 0, l: 0, r: 0,
         },
         xaxis: {
-            // tickmode: 'array',
             tickvals: [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
             ticktext: ["2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"],
+            automargin: true,
         },
         yaxis: {
             visible: false,
@@ -369,7 +415,10 @@ function createPlot(values, labels, width, height, divName, minmax) {
         width: width,
         height: height,
         paper_bgcolor: 'rgba(255, 255, 255, 0)', 
-        plot_bgcolor: 'rgba(255, 255, 255, 0)'
+        plot_bgcolor: 'rgba(255, 255, 255, 0)',
+        font: {
+            color: 'white',
+        }
 
     };
     var config = { staticPlot: true };
@@ -383,4 +432,16 @@ function spamTimer(wait = 250) {
         spamPrevent = false;
     }, wait);
     return true;
+}
+
+function isMobile() {
+  return window.innerWidth < 768;
+}
+
+function setBarbBoardVisible() {
+    if(citiesKnights) {
+        $("#barbBoardDiv").css("display", "flex");
+    } else  {
+        $("#barbBoardDiv").css("display", "none");
+    }
 }

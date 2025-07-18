@@ -1,0 +1,235 @@
+:root {
+    --popup-bg-color: rgba(19, 0, 0, 1);
+}
+
+html {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    background-image: url('/static/woodBackground.jpg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    background-position: center;
+
+    display: flex;
+    height: 90vh;
+}
+
+nav {
+    flex: 0 0 auto;
+}
+
+* {
+    color: white;
+}
+
+.modal-content {
+    background-color: var(--popup-bg-color);
+}
+
+.fullBody {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%
+}
+
+#rollBtn {
+    display: none;
+}
+
+.button-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    margin-right: 0;
+}
+
+.subbutton-container {
+    /* margin: 5%; */
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: 15%;
+    margin-bottom: 0rem;
+}
+
+.modal {
+    z-index: 1055;
+}
+
+.modal-backdrop {
+    z-index: 1050;
+}
+
+.form-group {
+    margin: 0.5rem;
+}
+
+.large-btn {
+    width: 90%;
+    font-size: 3rem;
+    margin: 5% 5%;
+}
+
+.small-btn {
+    width: 40%;
+    height: 7rem;
+    font-size: 2rem;
+    margin: 5% 5%;
+}
+
+.nav-link {
+    margin-left: 1rem;
+}
+
+.dropdown-menu {
+    font-size: 1rem;
+    background-color: var(--popup-bg-color);
+}
+
+button:disabled {
+    opacity: 1;
+    pointer-events: none;
+    cursor: default;
+}
+
+.textOutputDiv {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.mainRollDiv {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+    height: 50vh;
+    width: 100%
+}
+
+#probDist {
+    width: 80vw;
+    height: 17vh;
+    display: none;
+    margin-bottom: 0.5rem
+}
+
+.timeDisplayDiv {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 100%
+}
+
+.mainBody {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    flex: 1;
+}
+
+#playerBoardDiv {
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+    width: 100%;
+    height: 26vh;
+    justify-content: center;
+    justify-items: center;
+}
+
+.offcanvas-body {
+    width: 100vw;
+}
+
+.offcanvas-scroll-fix {
+    overflow-y: auto;               /* enable vertical scroll if needed */
+    overflow-x: hidden;             /* prevent sideways scroll */
+    padding-right: 1rem;            /* avoid accidental horizontal scrollbars */
+    box-sizing: border-box;
+}
+
+.offcanvas-bottom {
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    color: white;
+}
+
+#buttonReveal {
+    display: none;
+}
+
+.dice_row {
+    /* justify-content: space-between; */
+    gap: 16px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    width: 80%;
+    aspect-ratio: 3 / 1;
+}
+
+#barbBoardDiv {
+    /* width: 50%; */
+    height: 100%;
+
+    aspect-ratio: 6.05/5.54;
+    /* aspect-ratio: 2 /4 ; */
+    color-scheme: light;
+    background-image: url('/static/BarbBoards.png');
+    background-size: 200% 400%;
+    background-repeat: no-repeat;
+    display: none;
+    background-position: 0% 0%;
+}
+
+.dice_image {
+    height: 100%;
+    aspect-ratio: 1/1;
+    color-scheme: light;
+    background-image: url('/static/catanDice.png');
+    background-size: 400% 400%;
+    background-position: center; /* ✅ center the face within the die */
+    background-repeat: no-repeat;
+    border: 6px solid #000000 !important;
+    border-radius: 26px;
+    display: none;
+}
+
+#die1 {
+    background-position: 0% 0%;
+}
+
+#die2 {
+    background-position: 0% 0%;
+}
+
+#die3 {
+    /* display: none; */
+    background-position: 0% 0%;
+}
+
+.exampleDist {
+    width: 70vw;
+    height: 26vh;
+    margin: 0.3rem
+}
+
+.exampleDistContainer {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    justify-content: center;
+}

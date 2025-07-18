@@ -1,0 +1,38 @@
+{
+  "theme_color": "#000000",
+  "background_color": "#000000",
+  "orientation": "portrait",
+  "display": "standalone",
+  "dir": "auto",
+  "lang": "en-US",
+  "name": "Catan Probability Smudger",
+  "short_name": "Catan Smudger",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "manifest-icon-192.maskable.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "manifest-icon-512.maskable.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+<div class="button-container {{ extra_class if extra_class else '' }}">
+    <button class="btn btn-primary large-btn rollBtn d-none d-md-flex" type="button" style="height: 30%">
+    Roll Dice
+    </button>
+
+    {% include 'settingsDropdown.html' %}
+
+    <div class="subbutton-container">
+        <button class="btn btn-primary small-btn undoBtn" type="button" style="width: 90%">
+            Undo
+        </button>
+        <button class="btn btn-primary small-btn skipBtn" type="button" style="display: none">
+            Skip Roll
+        </button>
+    </div>
+
+    <div class="subbutton-container">
+    <button class="btn btn-primary small-btn pauseBtn" type="button">
+        Pause
+    </button>
+    <button class="btn btn-primary small-btn finishBtn" type="button">
+        Finish Game
+    </button>
+    </div>
+</div>

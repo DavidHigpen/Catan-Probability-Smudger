@@ -2,126 +2,78 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <meta name="description" content="Catan Dice Roller that smudges probability to make the results better distributed">
+    <meta http-equiv="ScreenOrientation" content="autoRotate:disabled">
+    <!-- For iOS Safari -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- For Android Chrome -->
+    <meta name="theme-color" content="#000000">
+
+    <link rel="manifest" href="/static/manifest.json">
+    <meta name="theme-color" content="#000000">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Catan Probability Smudger</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-      rel="stylesheet"
-    />
-    <script
-      src="https://cdn.plot.ly/plotly-3.0.1.min.js"
-      charset="utf-8"
-   ></script>
-    <style>
-      body {
-        background-image: url('{{ url_for("static", filename="woodBackground.jpg") }}');
-        background-size: cover;
-        background-repeat: no-repeat;
-        background-attachment: fixed;
-        background-position: center;
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='web.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='mobile.css') }}" media="(max-width: 768px)">
 
-        display: flex;
-        height: calc(100vh - 3.5rem);
-        margin-top: 3.5rem;
-      }
-      .button-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        width: 30%;
-        margin-right: 5%;
-      }
-      .subbutton-container {
-        /* margin: 5%; */
-        display: flex;
-        flex-direction: row;
-        width: 100%;
-        height: 15%;
-        margin-bottom: 3.5rem;
-      }
-      .modal {
-        z-index: 1055;
-      }
-      .modal-backdrop {
-        z-index: 1050;
-      }
-      .form-group {
-        margin: 1rem;
-      }
-      .large-btn {
-        width: 90%;
-        font-size: 3rem;
-        margin: 5% 5%;
-      }
-      .small-btn {
-        width: 40%;
-        height: 100%;
-        font-size: 2rem;
-        margin: 5% 5%;
-      }
-      .dropdown-menu {
-        font-size: 1rem;
-      }
-      button:disabled {
-        opacity: 1;
-        pointer-events: none;
-        cursor: default;
-      }
-    </style>
+    <script src="https://cdn.plot.ly/plotly-3.0.1.min.js" charset="utf-8"></script>
   </head>
 
   <body>
-    {% include 'navbar.html' %}
-    <div style="display: flex; flex-direction: row; width: 100%">
-      {% include 'newGameModal.html' %}
-      {% include 'endGameModal.html' %}
-      {% include 'howItWorksModal.html' %}
-      <div id="resultDiv" style=" flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; ">
-        <div style=" display: flex; flex-direction: row; justify-content: center; align-items: center; margin-bottom: 1rem; height: 40%; width: 80%">
-          <div style="margin-right: 3rem; width: 100%" id="playerBoardDiv">
-            <h2 id="player-text" class="text-center" style="font-size: 3rem">
-              Hit "New Game" to get started
-            </h1>
-            <h2 id="roll-text" class="text-center" style="font-size: 2.6rem"></h2>
-            <h2 id="barb-text" class="text-center" style="display: none; font-size: 2.6rem"></h2>
+    <div class="fullBody">
+      {% include 'navbar.html' %}
+      <div class="mainBody">
+        {% include 'newGameModal.html' %}
+        {% include 'endGameModal.html' %}
+        {% include 'howItWorksModal.html' %}
+        <div id="textOutputDiv" class="textOutputDiv">
+          <div class="mainRollDiv">
+            <div id="playerBoardDiv">
+              <h2 id="player-text" class="text-center" style="font-size: 3rem">
+              </h1>
+              <div class="dice_row">
+                <div class="dice_image" id="die1"></div>
+                <div class="dice_image" id="die2"></div>
+                <div class="dice_image" id="die3"></div>
+              </div>
+            </div>
+            <div id="barbBoardDiv">
+              <!-- <img id="barbBoard" src="{{ url_for('static', filename='Barb1.png') }}" alt="Dice Image" height="100%"/> -->
+            </div>
           </div>
-          <div style="width: 50%; height: 100%; display: none" id="barbBoardDiv">
-            <img id="barbBoard" src="{{ url_for('static', filename='Barb1.png') }}" alt="Dice Image" height="100%"/>
+          <div id="probDist"></div>
+          <div class="timeDisplayDiv">
+            <h2 id="time-text" class="text-center" style="display: none; margin-right: 1rem; width: 50%"></h2>
+            <h2 id="avg-time-text" class="text-center" style="display: none; width: 50%"></h2>
           </div>
         </div>
-        <div id="probDist" style="width: 80%; height: 30%; display: none; margin-bottom: 0.5rem"></div>
-        <div style="display: flex; flex-direction: row; justify-content: center; align-items: center; width: 100%">
-          <h2 id="time-text" class="text-center" style="display: none; margin-right: 1rem; width: 50%"></h2>
-          <h2 id="avg-time-text" class="text-center" style="display: none; width: 50%"></h2>
-        </div>
-      </div>
-      <div class="button-container">
-        <button id="rollBtn" class="btn btn-primary large-btn" type="button" style="height: 30%">
-          Roll Dice
-        </button>
 
-        {% include 'settingsDropdown.html' %}
+        <button id="buttonReveal" class="btn btn-primary d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasBottom" aria-controls="offcanvasBottom">▲</button>
 
-        <div class="subbutton-container">
-          <button id="undoBtn" class="btn btn-primary small-btn" type="button" style="width: 90%">
-            Undo
-          </button>
-          <button id="skipBtn" class="btn btn-primary small-btn" type="button" style="display: none">
-            Skip Roll
-          </button>
-        </div>
+        {% include 'mobileButtonContainer.html' %}
 
-        <div class="subbutton-container">
-          <button id="pauseBtn" class="btn btn-primary small-btn" type="button">
-            Pause
-          </button>
-          <button id="finishBtn" class="btn btn-primary small-btn" type="button">
-            Finish Game
-          </button>
-        </div>
+        {% set extra_class = "d-none d-md-flex" %}
+        {% include 'buttonContainer.html' %}
+
+
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="{{ url_for('static', filename='index.js') }}"></script>
+    <script src="{{ url_for('static', filename='gameLogic.js') }}"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/static/sw.js').then(function (registration) {
+          console.log('ServiceWorker registered:', registration);
+        }).catch(function (error) {
+          console.log('ServiceWorker failed:', error);
+        });
+      }
+    </script>
   </body>
 </html>

@@ -1,16 +1,29 @@
-<nav class="navbar fixed-top" style="font-size: 1.5rem;">
-  <div class="container-fluid">
-    <!-- Left Page Title -->
-    <a class="navbar-brand" style="font-size: 1.5rem">Catan Probability Smudger</a>
+<div style="height: 6%">
+  <nav class="navbar fixed-top" style="font-size: 1.5rem; height: auto; color: white ;">
+    <div class="container-fluid">
+      <!-- Left Page Title -->
+      <span class="navbar-brand" style="font-size: 1.5rem; color: white">Catan Probability Smudger</span>
 
-    <!-- Right Page Title -->
-    <ul class="navbar-nav d-flex flex-row align-items-center">
-      <li class="nav-item me-3">
-        <a class="nav-link py-2" id="newGameBtn" style="cursor: pointer;">New Game</a>
-      </li>
-      <li class="nav-item me-3">
-        <a class="nav-link py-2" id="howItWorksBtn" style="cursor: pointer;" data-target="#exampleModalLive">How It Works</a>
-      </li>
-    </ul>
-  </div>
-</nav>
+      
+      <!-- Right Page Title -->
+      <div class="dropdown d-md-none">
+        <button class="btn btn-link p-0" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: none; border: none;">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton">
+          <a href="#" role="button" class="nav-link py-2 newGameBtn" style="cursor: pointer; color: white" onclick="event.preventDefault();">New Game</a>
+          <a href="#" role="button" class="nav-link py-2 howItWorksBtn" style="cursor: pointer; color: white" onclick="event.preventDefault();">How It Works</a>
+        </div>
+      </div>
+      
+      <ul class="navbar-nav d-flex flex-row align-items-center d-none d-md-flex">
+        <li class="nav-item me-3">
+          <a href="#" role="button" class="nav-link py-2 newGameBtn" style="cursor: pointer; color: white" onclick="event.preventDefault();">New Game</a>
+        </li>
+        <li class="nav-item me-3">
+          <a href="#" role="button" class="nav-link py-2 howItWorksBtn" style="cursor: pointer; color: white" onclick="event.preventDefault();">How It Works</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+</div>

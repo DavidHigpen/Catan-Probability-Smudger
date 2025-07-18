@@ -1,24 +1,47 @@
-<button class="btn btn-primary large-btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
+<button class="btn btn-primary large-btn dropdown-toggle d-none d-md-flex" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown"
     aria-haspopup="true" aria-expanded="false" style="height: 15%; font-size: 2rem">
     Game Options
 </button>
 <div class="dropdown-menu p-3" aria-labelledby="dropdownMenuButton">
     <div class="form-group mb-3">
-        <input type="checkbox" class="form-check-input" id="toggleDist">
-        <label class="form-check-label" for="toggleDist">
-            Show distribution
+        <label class="form-check-label d-flex align-items-center">
+          <input type="checkbox" class="form-check-input me-2 toggleDist">
+          Show distribution
         </label>
-    </div>
-    <div class="form-group mb-3">
-        <input type="checkbox" class="form-check-input" id="toggleTime1">
-        <label class="form-check-label" for="toggleTime1">
-            Show current time
+      </div>
+      
+      <div class="form-group mb-3">
+        <label class="form-check-label d-flex align-items-center">
+          <input type="checkbox" class="form-check-input me-2 toggleTime1">
+          Show current time
         </label>
-    </div>
-    <div class="form-group mb-3">
-        <input type="checkbox" class="form-check-input" id="toggleTime2">
-        <label class="form-check-label" for="toggleTime2">
-            Show time averages
+      </div>
+      
+      <div class="form-group mb-3">
+        <label class="form-check-label d-flex align-items-center">
+          <input type="checkbox" class="form-check-input me-2 toggleTime2">
+          Show time averages
         </label>
-    </div>
+      </div>
+</div>
+
+<div class="form-group mb-3 d-md-none">
+    <label class="form-check-label d-flex align-items-center">
+        <input type="checkbox" class="form-check-input me-2 toggleDist">
+        Show distribution
+    </label>
+</div>
+
+<div class="form-group mb-3 d-md-none">
+    <label class="form-check-label d-flex align-items-center">
+        <input type="checkbox" class="form-check-input me-2 toggleTime1">
+        Show current time
+    </label>
+</div>
+
+<div class="form-group mb-3 d-md-none">
+    <label class="form-check-label d-flex align-items-center">
+        <input type="checkbox" class="form-check-input me-2 toggleTime2">
+        Show time averages
+    </label>
 </div>

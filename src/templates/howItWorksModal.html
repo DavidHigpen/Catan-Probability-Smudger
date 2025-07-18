@@ -42,7 +42,11 @@
                 <h2 style="margin-right: 2rem">Distribution Examples</h2> 
                 <button type="button" class="btn btn-success" id="rerollBtn">Reroll</button>
               </div>
-              <p>Below are two histograms generated from 72 rolls (about how many dice are rolled in a game of Catan)
+              <div class="exampleDistContainer">
+                <div id="real" class="exampleDist"></div>
+                <div id="smudged" class="exampleDist"></div>
+              </div>
+              <p>Above are two histograms generated from 72 rolls (about how many dice are rolled in a game of Catan)
                 <ul>
                   <li>
                     The left graph shows results from fair dice
@@ -55,10 +59,6 @@
                 The smudged dice don't eliminate chance, but they tighten the standard deviation, producing a more consistent curve on average.<br>
                 Click through to view more examples and compare for yourself.
 
-              <div style="display: flex; flex-direction: row; width: 100%; justify-content: center;">
-                <div id="real" style="width: 30vw; height: 26vh"></div>
-                <div id="smudged" style="width: 30vw; height: 26vh"></div>
-              </div>
 
               <h2>Share Your Thoughts</h2>
               <p>Suggestions? Feel free to let me know! Whether it be bug fixes, feature requests, algorithm improvements, or anything else. Email me at [email]. If you know someone who'd find this project interesting, please share the website.</p>
