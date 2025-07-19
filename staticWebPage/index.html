@@ -274,8 +274,18 @@
       </div>
       <!-- How It Works Modal End -->
 
+      <div id="prevRollDiv">
+        <h3 style="margin-top: 0.5rem;">Previous Roll</h3>
+        <div id="prev_dice_row">
+          <div class="dice_image" id="prev_die1"></div>
+          <div class="dice_image" id="prev_die2"></div>
+          <div class="dice_image" id="prev_die3"></div>
+        </div>
+      </div>
+
       <div id="mainResultsDiv" class="textOutputDiv">
         <h2 id="player-text" class="text-center"></h2>
+        <h3 id="next-player" class="text-center"></h2>
         <div id="mainRollDiv">
             <div id="dice_row">
               <div class="dice_image" id="die1"></div>
@@ -323,6 +333,20 @@
               <label class="form-check-label d-flex align-items-center">
                 <input type="checkbox" class="form-check-input me-2" id="toggleTime2">
                 Show time averages
+              </label>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-check-label d-flex align-items-center">
+                <input type="checkbox" class="form-check-input me-2" id="togglePrevTurn">
+                Show previous turn
+              </label>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-check-label d-flex align-items-center">
+                <input type="checkbox" class="form-check-input me-2" id="toggleNextTurn">
+                Show next turn
               </label>
             </div>
 

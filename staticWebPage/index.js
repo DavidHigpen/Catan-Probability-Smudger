@@ -5,6 +5,8 @@ var citiesKnights = false;
 var showDist = false;
 var showTime = false;
 var showAverageTime = false;
+var showNextPlayer = false;
+var showPrevTurn = false;
 var allRolls = {2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0};
 var currTurnLength = 0;
 var firstRoll = true;
@@ -21,6 +23,9 @@ var real = {};
 var smudged = {};
 
 // Page elements
+const prev_die1 = document.getElementById("prev_die1");
+const prev_die2 = document.getElementById("prev_die2");
+const prev_die3 = document.getElementById("prev_die3");
 const die1 = document.getElementById("die1");
 const die2 = document.getElementById("die2");
 const die3 = document.getElementById("die3");
@@ -31,18 +36,21 @@ const playerTimeSummary = document.getElementById("player-time-summary");
 const timeDiv = document.getElementById("timeDiv");
 const skipBtn = document.getElementById("skipBtn");
 const playerText = document.getElementById("player-text");
+const nextPlayer = document.getElementById("next-player");
 const barbBoardDiv = document.getElementById("barbBoardDiv");
 const offcanvasEl = document.getElementById('offcanvasBottom');
 const buttonReveal = document.getElementById("buttonReveal");
 const mainRollDiv = document.getElementById("mainRollDiv");
+const prevRollDiv = document.getElementById("prevRollDiv");
 const pauseBtn = document.getElementById("pauseBtn");
 const statsDiv = document.querySelector(".statsDiv");
 const diceRow = document.getElementById("dice_row");
+const prevDiceRow = document.getElementById("prev_dice_row");
+const diceImage = document.querySelector(".dice_image");
 
 
 if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js').then(function (registration) {
-        // console.log('ServiceWorker registered:', registration);
     }).catch(function (error) {
         console.log('ServiceWorker failed:', error);
     });
@@ -78,12 +86,10 @@ handleOrientationChange(mql);
 document.addEventListener("DOMContentLoaded", () => {
     userId = localStorage.getItem("userId");
     if (!userId) {
-        userId = crypto.randomUUID(); // Generate a new unique ID
+        userId = Math.random().toString(16).slice(2);
         localStorage.setItem("userId", userId);
-        console.log("Generated new user ID:", userId);
-    } else {
-        console.log("Loaded existing user ID:", userId);
     }
+    logVisit();
     
 
     if(!isMobile()) {
@@ -176,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
         bootstrap.Offcanvas.getOrCreateInstance(document.querySelector(".offcanvas")).hide();
         undoTurn();
     });
-    
+
     document.getElementById("toggleDist").addEventListener("click", () => {
         showDist = document.getElementById("toggleDist").checked;
         if (!gameInProgress) return;
@@ -186,13 +192,13 @@ document.addEventListener("DOMContentLoaded", () => {
     
         document.getElementById("probDist").style.display = showDist ? "block" : "none";
         setTimeout(drawRollProbs, 10);
-      });
+    });
     
     document.getElementById("toggleTime1").addEventListener("click", () => {
         showTime = document.getElementById("toggleTime1").checked;
         if (!gameInProgress) return;
     
-        document.getElementById("time-text").style.display = showTime ? "block" : "none";
+        timeText.style.display = showTime ? "block" : "none";
         toggleFlex(showDist || showTime || showAverageTime, statsDiv);
         toggleFlex(showTime || showAverageTime, timeDiv);
         setResize();
@@ -203,17 +209,31 @@ document.addEventListener("DOMContentLoaded", () => {
         showAverageTime = document.getElementById("toggleTime2").checked;
         if (!gameInProgress) return;
     
-        document.getElementById("avg-time-text").style.display = showAverageTime ? "block" : "none";
+        avgTimeText.style.display = showAverageTime ? "block" : "none";
         toggleFlex(showDist || showTime || showAverageTime, statsDiv);
         toggleFlex(showTime || showAverageTime, timeDiv);
         populateTurnAverages();
         setResize();
     });
+
+    document.getElementById("toggleNextTurn").addEventListener("click", () => {
+        showNextPlayer = document.getElementById("toggleNextTurn").checked;
+        if (!gameInProgress) return;
     
-        document.querySelector(".how-it-works-modal").addEventListener("shown.bs.modal", rollExamples);
-        
-        resetClockInterval();
-        bootstrap.Modal.getOrCreateInstance(document.querySelector(".how-it-works-modal")).show();
+        nextPlayer.style.display = showNextPlayer ? "block" : "none";
+    });
+    
+    document.getElementById("togglePrevTurn").addEventListener("click", () => {
+        showPrevTurn = document.getElementById("togglePrevTurn").checked;
+        if (!gameInProgress) return;
+    
+        prevRollDiv.style.display = (game.prevTurnStack.length > 1 && showPrevTurn) ? "flex" : "none";
+    });
+    
+    document.querySelector(".how-it-works-modal").addEventListener("shown.bs.modal", rollExamples);
+    
+    resetClockInterval();
+    bootstrap.Modal.getOrCreateInstance(document.querySelector(".how-it-works-modal")).show();
 });
     
 window.addEventListener("resize", () => {
@@ -254,13 +274,16 @@ function drawExamples() {
 
 function populateTurnAverages() {
     let turnsMessage = game.getAverageTurns();
-    timeText.innerHTML = turnsMessage;
+    // timeText.innerHTML = turnsMessage;
     playerTimeSummary.innerHTML = turnsMessage;
 }
 
 
 function init() {
     firstEndGame = true;
+    prev_die1.style.display = "none";
+    prev_die2.style.display = "none";
+    prev_die3.style.display = "none";
     die1.style.display = "none";
     die2.style.display = "none";
     die3.style.display = "none";
@@ -281,8 +304,9 @@ function init() {
     currTurnLength = 0;
 
     if (citiesKnights) {
+        prevDiceRow.style.aspectRatio = "3/1";
         diceRow.style.aspectRatio = "3/1";
-        diceRow.style.width = "90%";
+        // prevDiceRow.style.width = "90%";
         timeDiv.style.flexDirection = "row";
         skipBtn.style.display = "inline-block";
         mainRollDiv.style.height = "50%";
@@ -291,11 +315,12 @@ function init() {
             diceRow.style.width = "40%";
         }
     } else {
+        prevDiceRow.style.aspectRatio = "2/1";
         diceRow.style.aspectRatio = "2/1";
         diceRow.style.width = "60%";
         timeDiv.style.flexDirection = "column";
         skipBtn.style.display = "none";
-        mainRollDiv.style.height = "26%";
+        mainRollDiv.style.height = "20%";
         mainRollDiv.style.width = "100%";
         if(!isMobile()) {
             diceRow.style.width = "30%";
@@ -330,6 +355,7 @@ function updateTime() {
 
 function startGame(event = null) {
     mainRollDiv.style.display = "none";
+    prevRollDiv.style.display = "none";
     if(event)
         event.preventDefault(); 
 
@@ -361,22 +387,7 @@ function doTurn(skip = false) {
     // if(!spamTimer()) return;
     if(!gameSetup) return;
     if(!gameInProgress) { // First turn
-        buttonReveal.style.display = "block";
-        timeDiv.style.display = (showTime || showAverageTime) ? "block" : "none"
-        timeText.style.display = (showTime) ? "block" : "none"
-        avgTimeText.style.display = (showAverageTime) ? "block" : "none"
-        if(citiesKnights) die3.style.display = "block";
-        setBarbBoardVisible();
-        mainRollDiv.style.display = "flex";
-
-        toggleFlex((showDist || showTime || showAverageTime), statsDiv);
-        toggleFlex((showTime || showAverageTime), timeDiv);
-        probDist.style.display = showDist ? "block" : "none";
-    }
-    if(skip) {
-        diceRow.style.justifyContent = "center";
-    } else {
-        diceRow.style.justifyContent = "space-between";
+        firstTurnInit();
     }
     setResize();
     gameInProgress = true;
@@ -390,6 +401,31 @@ function doTurn(skip = false) {
     avgTimeText.innerHTML = currTurn.averageTurns;
 
     allRolls[currTurn.turn.roll] += 1;
+
+    let totalTime = 0;
+    for (const time in game.turnTimes) {
+        totalTime += game.turnTimes[time].reduce((a, b) => a + b, 0);
+    }
+    if(totalTime > 30 * 60) {
+        logThirtyMin(totalTime);
+    }
+}
+
+function firstTurnInit() {
+    buttonReveal.style.display = "block";
+    timeDiv.style.display = (showTime || showAverageTime) ? "block" : "none"
+    timeText.style.display = (showTime) ? "block" : "none"
+    avgTimeText.style.display = (showAverageTime) ? "block" : "none"
+    if(citiesKnights) {
+        die3.style.display = "block";
+        prev_die3.style.display = "block";
+    }
+    setBarbBoardVisible();
+    mainRollDiv.style.display = "flex";
+
+    toggleFlex((showDist || showTime || showAverageTime), statsDiv);
+    toggleFlex((showTime || showAverageTime), timeDiv);
+    probDist.style.display = showDist ? "block" : "none";
 }
 
 function undoTurn() {
@@ -424,42 +460,9 @@ function finishGame() {
     firstEndGame = false;
 }
 
-function logEndGame() {
-    if(!game) return;
-    let totalTime = 0;
-    for (const time in game.turnTimes) {
-        totalTime += game.turnTimes[time].reduce((a, b) => a + b, 0);
-    }
-    fetch("https://script.google.com/macros/s/AKfycbwMs46XaG7ic9Nw32RYnmIuXnsz9u-sDFzt3-gbbsh0-3LZHfvmcsGK_pmZCUNbEak/exec", {
-        method: "POST",
-        redirect: "follow",
-        headers: {
-            "Content-Type": "text/plain;charset=utf-8",
-        },
-        body: JSON.stringify({
-            sheetname: "EndGame",
-            browserInfo: navigator.userAgent,
-            firstEndGame: firstEndGame,
-            allRolls: JSON.stringify(allRolls),
-            citiesAndKnights: game.citiesAndKnights,
-            prevTurnStack: JSON.stringify(game.prevTurnStack),
-            turnTimes: JSON.stringify(game.turnTimes),
-            totalTime: totalTime,
-            rollCount: game.prevTurnStack.length,
-            gameId: game ? game.gameId : "",
-            userId: userId,
-        })
-    })
-    .then(res => {
-        if (!res.ok) {
-            throw new Error("Network response was not ok: " + res.statusText);
-        }
-    })
-    .catch(err => console.error("Fetch failed:", err));
-}
-
 function setDisplay(data) {
     playerText.textContent = "It is " + data.player + "'s turn";
+    nextPlayer.textContent = "Next Player: " + game.players[(data.currTurn + 1) % game.players.length];
     if(citiesKnights) {
         if(data.action === "Barbarians") {
             drawDie(12, die3);
@@ -473,16 +476,50 @@ function setDisplay(data) {
         drawBarbBoard(data.barbLevel);
     }
     if(data.roll === "Turn Skipped") {
+        prev_die1.style.display = "none";
+        prev_die2.style.display = "none";
         die1.style.display = "none";
         die2.style.display = "none";
     } else {
+        prev_die1.style.display = "block";
+        prev_die2.style.display = "block";
         die1.style.display = "block";
         die2.style.display = "block";
+
+
         drawDie(6 + data.roll - data.red - 1, die1);
         drawDie(data.red - 1, die2);
     }
     if(showDist)
         drawRollProbs();
+    if(game.prevTurnStack.length > 1) { // Handle previous turn popup
+        if(showPrevTurn) {
+            prevRollDiv.style.display = "flex";
+        }
+        const prevRoll = game.prevTurnStack[game.prevTurnStack.length - 2];
+        if(prevRoll.roll !== "Turn Skipped") {
+            prev_die1.style.display = "block";
+            prev_die2.style.display = "block";
+            drawDie(6 + prevRoll.roll - prevRoll.red - 1, prev_die1);
+            drawDie(prevRoll.red - 1, prev_die2);
+        } else {
+            prev_die1.style.display = "none";
+            prev_die2.style.display = "none";
+        }
+        if(citiesKnights) {
+            if(prevRoll.action === "Barbarians") {
+                drawDie(12, prev_die3);
+            } else if (prevRoll.action === "Yellow") {
+                drawDie(13, prev_die3);
+            } else if (prevRoll.action === "Blue") {
+                drawDie(14, prev_die3);
+            } else {
+                drawDie(15, prev_die3);
+            }
+        }
+    } else {
+        prevRollDiv.style.display = "none";
+    }
 }
 
 function drawBarbBoard(level) {
@@ -691,4 +728,69 @@ function setStartingDisplay(index) {
     }
     game.players = game.players.slice(index).concat(game.players.slice(0, index));
     inputPaused = false;
+}
+
+function logEndGame() {
+    if(!game) return;
+    let totalTime = 0;
+    for (const time in game.turnTimes) {
+        totalTime += game.turnTimes[time].reduce((a, b) => a + b, 0);
+    }
+    const data = {
+        sheetname: "EndGame",
+        browserInfo: navigator.userAgent,
+        firstEndGame: firstEndGame,
+        allRolls: JSON.stringify(allRolls),
+        citiesAndKnights: game.citiesAndKnights,
+        prevTurnStack: JSON.stringify(game.prevTurnStack),
+        turnTimes: JSON.stringify(game.turnTimes),
+        totalTime: totalTime,
+        rollCount: game.prevTurnStack.length,
+        gameId: game ? game.gameId : "",
+        userId: userId,
+    };
+    log(data);
+}
+
+function logThirtyMin(totalTime) {
+    if(!game) return;
+    const data = {
+        sheetname: "ThirtyMin",
+        browserInfo: navigator.userAgent,
+        allRolls: JSON.stringify(allRolls),
+        citiesAndKnights: game.citiesAndKnights,
+        prevTurnStack: JSON.stringify(game.prevTurnStack),
+        turnTimes: JSON.stringify(game.turnTimes),
+        totalTime: totalTime,
+        rollCount: game.prevTurnStack.length,
+        gameId: game ? game.gameId : "",
+        userId: userId,
+    };
+    log(data);
+}
+
+function logVisit() {
+    const data = {
+        sheetname: "Visits",
+        browserInfo: navigator.userAgent,
+        userId: userId,
+    };
+    log(data);
+}
+
+function log(data) {
+    fetch("https://script.google.com/macros/s/AKfycbwMs46XaG7ic9Nw32RYnmIuXnsz9u-sDFzt3-gbbsh0-3LZHfvmcsGK_pmZCUNbEak/exec", {
+        method: "POST",
+        redirect: "follow",
+        headers: {
+            "Content-Type": "text/plain;charset=utf-8",
+        },
+        body: JSON.stringify(data)
+    })
+    .then(res => {
+        if (!res.ok) {
+            throw new Error("Network response was not ok: " + res.statusText);
+        }
+    })
+    .catch(err => console.error("Fetch failed:", err));
 }
