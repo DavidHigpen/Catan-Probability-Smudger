@@ -470,9 +470,7 @@ button:disabled {
     .form-group {
         margin: 0.26rem;
     }
-}
 
-@media only screen and (max-height: 700px) {
     #prevRollDiv {
         width: 70vw;
         flex-direction: row;
